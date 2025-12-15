@@ -104,7 +104,7 @@ export default function Navbar() {
             </button>
           </div>
 
-          <div className='space-x-4'>
+          <div className='space-x-4 hidden lg:block'>
             <Link
               to="/register"
               className="px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-600"
@@ -134,6 +134,20 @@ export default function Navbar() {
           <a href="#trashcash" onClick={closeMobile} className="block nav-link py-2 text-hitam">TrashCash</a>
           <a href="#komunitas" onClick={closeMobile} className='block nav-link py-2 text-hitam'>Komunitas</a>
           <a href="#kontak" onClick={closeMobile} className='block nav-link py-2 text-hitam'>Kontak</a>
+          <div className='space-x-4 lg:hidden mt-4'>
+            <Link
+              to="/register"
+              className="px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-600"
+            >
+              Register
+            </Link>
+            <Link
+              to="/login"
+              className="px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-600"
+            >
+              Login
+            </Link>
+          </div>
         </div>
       </div>
     </header>
