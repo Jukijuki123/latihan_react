@@ -1,6 +1,6 @@
 // src/pages/Register.jsx
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import api from "../api";
 
 const Register = () => {
@@ -124,6 +124,13 @@ const Register = () => {
           >
             {loading ? "Memproses..." : "Daftar"}
           </button>
+
+          <p className="text-sm">
+            Sudah punya akun?
+            <Link to='/login'>
+            <span className="text-blue-600 hover:underline"> Login</span>
+            </Link> 
+          </p>
         </form>
       </div>
     </>

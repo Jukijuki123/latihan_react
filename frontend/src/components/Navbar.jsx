@@ -1,8 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from "react-router-dom";
 import logo from "../assets/img/logoEartLine.svg";
+import useAuth from '../contexts/useAuth';
 
 export default function Navbar() {
+
+  const { user, logout, isAuthenticated } = useAuth()
+
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const navRef = useRef(null);
@@ -105,18 +109,33 @@ export default function Navbar() {
           </div>
 
           <div className='space-x-4 hidden lg:block'>
-            <Link
-              to="/register"
-              className="px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-600"
-            >
-              Register
-            </Link>
-            <Link
-              to="/login"
-              className="px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-600"
-            >
-              Login
-            </Link>
+            {/* AUTH AREA */}
+            {!isAuthenticated ? (
+              // 🔴 BELUM LOGIN
+              <a
+                href="/login"
+                className="px-5 py-1 bg-primary-dark text-white rounded-md"
+              >
+                Login
+              </a>
+            ) : (
+              // 🟢 SUDAH LOGIN
+              <div className="relative group">
+                <button className="flex items-center gap-2 font-medium">
+                  {user.name}
+                </button>
+
+                {/* dropdown */}
+                <div className="absolute right-0 mt-2 w-40 bg-white shadow rounded-lg opacity-0 group-hover:opacity-100 transition">
+                  <button
+                    onClick={logout}
+                    className="w-full px-5 py-1 text-left rounded-md overflow-hidden bg-gray-100 hover:bg-gray-200"
+                  >
+                    Logout
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -134,19 +153,35 @@ export default function Navbar() {
           <a href="#trashcash" onClick={closeMobile} className="block nav-link py-2 text-hitam">TrashCash</a>
           <a href="#komunitas" onClick={closeMobile} className='block nav-link py-2 text-hitam'>Komunitas</a>
           <a href="#kontak" onClick={closeMobile} className='block nav-link py-2 text-hitam'>Kontak</a>
+
           <div className='space-x-4 lg:hidden mt-4'>
-            <Link
-              to="/register"
-              className="px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-600"
-            >
-              Register
-            </Link>
-            <Link
-              to="/login"
-              className="px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-600"
-            >
-              Login
-            </Link>
+            {/* AUTH AREA */}
+            {!isAuthenticated ? (
+              // 🔴 BELUM LOGIN
+              <a
+                href="/login"
+                className="px-5 py-1 bg-primary-dark text-white rounded-md"
+              >
+                Login
+              </a>
+            ) : (
+              // 🟢 SUDAH LOGIN
+              <div className="relative group">
+                <button className="flex items-center gap-2 font-medium">
+                  {user.name}
+                </button>
+
+                {/* dropdown */}
+                <div className="absolute right-0 mt-2 w-40 bg-white shadow rounded-lg opacity-0 group-hover:opacity-100 transition">
+                  <button
+                    onClick={logout}
+                    className="w-full px-5 py-1 text-center bg-gray-100 hover:bg-gray-200"
+                  >
+                    Logout
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
