@@ -5,6 +5,7 @@ import TentangSection from '../components/TentangSection'
 import imgGelombang from "../assets/img/gelombang.svg";
 import SumberSampah from '../components/SumberSampah';
 import TestimoniSection from '../components/Testimoni';
+import TestimoniForm from '../components/TestimoniForm';
 import CommunitySection from '../components/KomunitasSection';
 import EducationSection from '../components/EdukasiSection';
 import ProdukKerajinan from '../components/Produk';
@@ -17,7 +18,6 @@ import CaraKerja from '../components/CaraKerja';
 import Footer from '../components/Footer';
 import Chatbot from '../components/Chatbot';
 import RunningWords from '../components/RunningWords';
-import NewsSection from '../components/NewsSection';
 
 
 const Landing = () => {
@@ -41,10 +41,10 @@ const Landing = () => {
             <CaraKerja />
             <TrashCashSection />
             <TestimoniSection />
+            <TestimoniForm />
             <CommunitySection />
             <FaqSection />
             <ContactSection />
-            <NewsSection />
             <Footer />
         </main>
     </>

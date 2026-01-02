@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 
 class TestimonialController extends Controller
 {
-    // GET testimonials
     public function index()
     {
         return response()->json(
@@ -15,23 +14,29 @@ class TestimonialController extends Controller
         );
     }
 
-    // POST testimonial
     public function store(Request $request)
     {
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'Unauthenticated'
+            ], 401);
+        }
+
         $validated = $request->validate([
-            'name' => 'required',
-            'quote' => 'required',
+            'quote' => 'required|string|min:10',
+            'rating' => 'required|integer|min:1|max:5',
         ]);
 
         $testimonial = Testimonials::create([
-            'name' => $validated['name'],
-            'username' => $request->username ?? null,
+            'user_id' => $user->id,
+            'name' => $user->name,
+            'username' => '@' . explode('@', $user->email)[0],
             'quote' => $validated['quote'],
-            'color' => $request->color ?? 'blue',
-            'avatar' => $request->avatar ?? null,
+            'rating' => $validated['rating'],
         ]);
 
         return response()->json($testimonial, 201);
     }
 }
-

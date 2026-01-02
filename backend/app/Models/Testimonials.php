@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class Testimonials extends Model
 {
     protected $fillable = [
+        'user_id',
         'name',
         'username',
         'quote',
-        'color',
-        'avatar'
+        'rating',
     ];
 }

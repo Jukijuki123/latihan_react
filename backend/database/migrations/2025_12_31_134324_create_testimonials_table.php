@@ -13,13 +13,14 @@ return new class extends Migration
     {
         Schema::create('testimonials', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('name');
-            $table->string('username')->nullable();
+            $table->string('username');
             $table->text('quote');
-            $table->string('color')->default('blue');
-            $table->string('avatar')->nullable(); // url / path foto
+            $table->unsignedTinyInteger('rating'); // 1-5
             $table->timestamps();
         });
+
     }
 
     /**
