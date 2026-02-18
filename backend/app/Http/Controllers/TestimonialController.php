@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Testimonials;
+use App\Models\Testimonial;
 use Illuminate\Http\Request;
 
 class TestimonialController extends Controller
@@ -10,7 +10,7 @@ class TestimonialController extends Controller
     public function index()
     {
         return response()->json(
-            Testimonials::latest()->get()
+            Testimonial::latest()->get()
         );
     }
 
@@ -18,18 +18,12 @@ class TestimonialController extends Controller
     {
         $user = $request->user();
 
-        if (!$user) {
-            return response()->json([
-                'message' => 'Unauthenticated'
-            ], 401);
-        }
-
         $validated = $request->validate([
             'quote' => 'required|string|min:10',
             'rating' => 'required|integer|min:1|max:5',
         ]);
 
-        $testimonial = Testimonials::create([
+        $testimonial = Testimonial::create([
             'user_id' => $user->id,
             'name' => $user->name,
             'username' => '@' . explode('@', $user->email)[0],
