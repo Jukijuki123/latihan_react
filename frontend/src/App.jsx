@@ -6,8 +6,8 @@ import Register from "./pages/RegisterPage";
 import Login from "./pages/LoginPage";
 import Edukasi from "./pages/Edukasi";
 import ProtectedRoute from "./ProtectedRoute";
-import UploadNews from "./components/UploadNews";
 import TrashcashPage from "./pages/TrashCash";
+import MapTrashCash from "./pages/MapTrashCash";
 import ScanPage from "./pages/ScanPage";
 
 function App() {
@@ -18,6 +18,7 @@ function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
       <Route path="/trashcash" element={<TrashcashPage />} />
+      <Route path="/maptrashcash" element={<MapTrashCash />} />
       <Route path="/scan" element={<ScanPage />} />
 
       {/* PROTECTED PAGE */}
@@ -29,14 +30,7 @@ function App() {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/upload-news"
-        element={
-          <ProtectedRoute>
-            <UploadNews />
-          </ProtectedRoute>
-        }
-      />
+
     </Routes>
   );
 }
