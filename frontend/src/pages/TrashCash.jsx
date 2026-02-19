@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { QRCodeCanvas } from "qrcode.react";
 import bgTukarSampah from "../assets/img/BGTukarSampah.png";
+import api from "../api"; 
 
 const hargaPerKg = {
   Plastik: 5000,
@@ -19,29 +20,15 @@ const formatTanggal = (dateStr) => {
   })} ${date.getFullYear()}`;
 };
 
-const generateKodeTransaksi = () => {
-  const now = new Date();
-  const rand = Math.floor(Math.random() * 999)
-    .toString()
-    .padStart(3, "0");
-  return `TRX-${now.getFullYear()}${(now.getMonth() + 1)
-    .toString()
-    .padStart(2, "0")}${now
-    .getDate()
-    .toString()
-    .padStart(2, "0")}-${rand}`;
-};
-
 export default function TrashcashPage() {
   const { state } = useLocation();
   const navigate = useNavigate();
 
   const lokasiDipilih = state?.lokasi;
 
-  // 🔴 Kalau belum pilih lokasi → balik ke map
   useEffect(() => {
     if (!lokasiDipilih) {
-      navigate("/trashcash/map");
+      navigate("/maptrashcash");
     }
   }, [lokasiDipilih, navigate]);
 
@@ -78,38 +65,46 @@ export default function TrashcashPage() {
   const handleKurang = () =>
     setJumlah((prev) => (prev > 1 ? prev - 1 : 1));
 
-  const handleSubmit = () => {
+  // ✅ HANDLE SUBMIT BARU (KIRIM KE BACKEND)
+  const handleSubmit = async () => {
     if (!jenis || !tanggal || !waktu) {
       alert("Mohon lengkapi semua field!");
       return;
     }
 
-    const harga = jumlah * (hargaPerKg[jenis] || 0);
-    const formattedHarga = new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-    }).format(harga);
+    try {
+      const res = await api.post("/transactions", {
+        jenis,
+        jumlah,
+        lokasi: lokasiDipilih.name,
+        tanggal,
+        waktu,
+      });
 
-    const kode = generateKodeTransaksi();
+      const transaksi = res.data;
 
-    const transaksiData = {
-      kode,
-      lokasi: lokasiDipilih.name,
-      jenis,
-      jumlah: `${jumlah} kg`,
-      jadwal: `${formatTanggal(tanggal)} ${waktu}`,
-      harga: formattedHarga,
-    };
+      const formattedHarga = new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+        minimumFractionDigits: 0,
+      }).format(transaksi.total_harga);
 
-    localStorage.setItem(
-      `transaksi_${kode}`,
-      JSON.stringify(transaksiData)
-    );
+      setDetail({
+        kode: transaksi.kode,
+        lokasi: transaksi.lokasi,
+        jenis: transaksi.jenis,
+        jumlah: `${transaksi.jumlah} kg`,
+        jadwal: `${formatTanggal(transaksi.tanggal)} ${transaksi.waktu}`,
+        harga: formattedHarga,
+      });
 
-    setDetail(transaksiData);
-    setKodeTransaksi(kode);
-    setPopupOpen(true);
+      setKodeTransaksi(transaksi.kode);
+      setPopupOpen(true);
+
+    } catch (err) {
+      console.error(err);
+      alert("Gagal membuat transaksi. Pastikan Anda sudah login.");
+    }
   };
 
   const handleDownloadQr = () => {
@@ -126,11 +121,9 @@ export default function TrashcashPage() {
   return (
     <div className="bg-linear-to-br from-green-50 to-emerald-50 min-h-screen relative">
 
-      {/* FORM */}
       <main className="flex items-center justify-start h-screen px-6 md:px-12">
         <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-5 z-20">
 
-          {/* INFO LOKASI */}
           <div className="bg-emerald-50 p-3 rounded-xl border text-sm">
             <p className="font-semibold text-primary-dark">
               Lokasi Dipilih:
@@ -138,7 +131,6 @@ export default function TrashcashPage() {
             <p>{lokasiDipilih?.name}</p>
           </div>
 
-          {/* JENIS */}
           <div>
             <label className="block text-sm mb-1">Jenis Sampah</label>
             <select
@@ -155,14 +147,12 @@ export default function TrashcashPage() {
             </select>
           </div>
 
-          {/* JUMLAH */}
           <div className="flex items-center justify-between border rounded-xl">
             <button onClick={handleKurang} className="px-4 py-2">−</button>
             <span>{jumlah} kg</span>
             <button onClick={handleTambah} className="px-4 py-2">+</button>
           </div>
 
-          {/* TANGGAL & WAKTU */}
           <div className="grid grid-cols-2 gap-3">
             <input
               type="date"
@@ -192,7 +182,6 @@ export default function TrashcashPage() {
         </div>
       </main>
 
-      {/* POPUP */}
       {popupOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
@@ -201,7 +190,7 @@ export default function TrashcashPage() {
             </h2>
 
             <div ref={qrContainerRef} className="flex justify-center">
-              <QRCodeCanvas value={qrValue} size={200} />
+              <QRCodeCanvas value={qrValue} size={200} includeMargin={true}/>
             </div>
 
             <div className="text-sm space-y-1">
@@ -221,13 +210,11 @@ export default function TrashcashPage() {
                 Download QR
               </button>
               <button
-                type="button"
                 onClick={() => setPopupOpen(false)}
-                className="flex-1 bg-primary-dark text-white font-bold py-3 rounded-xl hover:from-green-700 hover:to-emerald-700 transition text-sm"
+                className="flex-1 bg-primary-dark text-white py-2 rounded-xl"
               >
                 Kembali
               </button>
-
             </div>
           </div>
         </div>

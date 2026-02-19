@@ -13,8 +13,17 @@ return new class extends Migration
     {
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
+            $table->string('kode')->unique();
+            $table->string('jenis');
+            $table->integer('jumlah');
+            $table->string('lokasi');
+            $table->date('tanggal');
+            $table->string('waktu');
+            $table->integer('total_harga');
+            $table->enum('status', ['pending', 'completed'])->default('pending');
             $table->timestamps();
         });
+
     }
 
     /**

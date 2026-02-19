@@ -1,86 +1,103 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
+import api from "../api";
 
 export default function ScanPage() {
-  const location = useLocation();
-  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const kode = searchParams.get("kode");
+
   const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
-    // ambil parameter kode dari URL
-    const params = new URLSearchParams(location.search);
-    const kode = params.get("kode");
     if (!kode) return;
 
-    const transaksi = localStorage.getItem(`transaksi_${kode}`);
-    if (transaksi) {
-      setData(JSON.parse(transaksi));
-    }
-  }, [location.search]);
+    const fetchData = async () => {
+      try {
+        const res = await api.get(`/transactions/${kode}`);
+        setData(res.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  if (!data) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="bg-white shadow-lg rounded-xl p-6 text-center">
-          <h2 className="text-lg font-bold text-red-600 mb-2">
-            Transaksi Tidak Ditemukan
-          </h2>
-          <p className="text-gray-500 text-sm mb-4">
-            Pastikan QR berasal dari sistem EarthLine
-          </p>
-          <button
-            onClick={() => navigate("/")}
-            className="bg-primary-dark text-white px-4 py-2 rounded-lg"
-          >
-            Kembali ke Beranda
-          </button>
-        </div>
-      </div>
-    );
-  }
+    fetchData();
+  }, [kode]);
+
+  const handleConfirm = async () => {
+    if (!data || data.status === "completed") return;
+
+    try {
+      setProcessing(true);
+
+      const res = await api.patch(`/transactions/${kode}/verify`);
+
+      setData(res.data.data);
+
+      alert("Transaksi berhasil dikonfirmasi!");
+    } catch (err) {
+      console.error(err);
+      alert("Gagal mengkonfirmasi transaksi.");
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  if (loading) return <div className="p-10">Memuat data...</div>;
+
+  if (!data)
+    return <div className="p-10 text-red-600">Transaksi tidak ditemukan</div>;
+
+  const isCompleted = data.status === "completed";
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-green-50 font-['Poppins']">
-      <div className="bg-white p-6 rounded-2xl shadow-xl w-full max-w-md">
-        <h2 className="text-xl font-bold text-primary-dark text-center mb-4">
-          Detail Penukaran Sampah
-        </h2>
-        <div className="space-y-3 text-sm">
-          <div className="flex justify-between">
-            <span className="text-gray-600">Kode</span>
-            <span className="font-medium">{data.kode}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600">Jenis</span>
-            <span className="font-medium">{data.jenis}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600">Jumlah</span>
-            <span className="font-medium">{data.jumlah}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600">Lokasi</span>
-            <span className="font-medium">{data.lokasi}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600">Jadwal</span>
-            <span className="font-medium">{data.jadwal}</span>
-          </div>
-          <div className="flex justify-between border-t pt-3 mt-3">
-            <span className="font-semibold">Total Harga</span>
-            <span className="font-bold text-primary-dark text-lg">
-              {data.harga}
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+      <div className="bg-white shadow-xl rounded-2xl p-6 w-full max-w-md space-y-4">
+        <h1 className="text-xl font-bold text-center">
+          Detail Transaksi
+        </h1>
+
+        <div className="space-y-1 text-sm">
+          <p><b>Kode:</b> {data.kode}</p>
+          <p><b>Jenis:</b> {data.jenis}</p>
+          <p><b>Jumlah:</b> {data.jumlah} kg</p>
+          <p><b>Lokasi:</b> {data.lokasi}</p>
+          <p><b>Tanggal:</b> {data.tanggal}</p>
+          <p><b>Waktu:</b> {data.waktu}</p>
+          <p><b>Total:</b> Rp {data.total_harga.toLocaleString("id-ID")}</p>
+          <p>
+            <b>Status:</b>{" "}
+            <span
+              className={`px-2 py-1 rounded text-xs font-semibold ${
+                isCompleted
+                  ? "bg-green-100 text-green-700"
+                  : "bg-yellow-100 text-yellow-700"
+              }`}
+            >
+              {data.status}
             </span>
-          </div>
+          </p>
         </div>
 
-        <button
-          onClick={() => alert("Pembayaran berhasil dikonfirmasi!")}
-          className="w-full mt-6 bg-green-600 text-white font-semibold py-3 rounded-xl hover:bg-green-700"
-        >
-          Konfirmasi Pembayaran
-        </button>
+        {!isCompleted && (
+          <button
+            onClick={handleConfirm}
+            disabled={processing}
+            className="w-full bg-primary-dark text-white py-3 rounded-xl font-semibold hover:scale-105 transition"
+          >
+            {processing ? "Memproses..." : "Konfirmasi Transaksi"}
+          </button>
+        )}
+
+        {isCompleted && (
+          <div className="text-center text-green-600 font-semibold">
+            Transaksi sudah selesai ✔
+          </div>
+        )}
       </div>
     </div>
   );
